@@ -1,4 +1,4 @@
-resource "aws_iam_role" "${var.worker_name}" {
+resource "aws_iam_role" "eks_cluster_node" {
   name = "terraform-eks-${var.worker_name}"
 
   assume_role_policy = <<POLICY
@@ -17,26 +17,26 @@ resource "aws_iam_role" "${var.worker_name}" {
 POLICY
 }
 
-resource "aws_iam_role_policy_attachment" "${var.worker_name}-AmazonEKSWorkerNodePolicy" {
+resource "aws_iam_role_policy_attachment" "eks_cluster_node-AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.${var.worker_name}.name
+  role       = aws_iam_role.eks_cluster_node.name
 }
 
-resource "aws_iam_role_policy_attachment" "${var.worker_name}-AmazonEKS_CNI_Policy" {
+resource "aws_iam_role_policy_attachment" "eks_cluste_noder-AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.${var.worker_name}.name
+  role       = aws_iam_role.eks_cluster_node.name
 }
 
-resource "aws_iam_role_policy_attachment" "${var.worker_name}-AmazonEC2ContainerRegistryReadOnly" {
+resource "aws_iam_role_policy_attachment" "eks_cluster_node-AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.${var.worker_name}.name
+  role       = aws_iam_role.eks_cluster_node.name
 }
 
-resource "aws_eks_node_group" "${var.worker_name}" {
-  cluster_name    = aws_eks_cluster.${var.worker_name}.name
+resource "aws_eks_node_group" "eks_cluster_node" {
+  cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "${var.worker_name}"
-  node_role_arn   = aws_iam_role.${var.worker_name}.arn
-  subnet_ids      = aws_subnet.${var.worker_name}[*].id
+  node_role_arn   = aws_iam_role.eks_cluster_node.arn
+  subnet_ids      = var.subnet_ids
   ami_type        = var.ami_type
   instance_types  = var.instance_types
 
@@ -47,9 +47,9 @@ resource "aws_eks_node_group" "${var.worker_name}" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.${var.worker_name}-AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.${var.worker_name}-AmazonEKS_CNI_Policy,
-    aws_iam_role_policy_attachment.${var.worker_name}-AmazonEC2ContainerRegistryReadOnly,
-	aws_eks_cluster.${var.cluster_name}
+    aws_iam_role_policy_attachment.eks_cluster_node-AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.eks_cluster_node-AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.eks_cluster_node-AmazonEC2ContainerRegistryReadOnly,
+	  aws_eks_cluster.eks_cluster
   ]
 }

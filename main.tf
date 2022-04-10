@@ -1,7 +1,5 @@
 provider "aws" {
   region    = "us-east-1" #var.aws_region
-  access_key = "AKIAVQSD4QIGUH5T5IHL"
-  secreate_key = "k9g6grCK2F68S45ABzRVJwxgXeSLqXhIclRk1iut"
 }
 /*
 terraform {
@@ -15,7 +13,7 @@ terraform {
 */
 
 module "eks" {
-  source           = modules\\eks
+  source           = modules/eks
   cluster_name     = var.cluster_name
 #  cluster_version = "1.14"
   subnet_ids       = var.private_subnet_ids #module.vpc.private_subnet_ids
@@ -25,4 +23,5 @@ module "eks" {
   desired_size     = var.desired_size
   min_size         = var.min_size
   instance_types   = var.instance_types
+  vpc_id           = "vpc-08cdadb2b5fe29575"
 }

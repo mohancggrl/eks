@@ -32,3 +32,8 @@ variable "instance_types" {
   type = string
 }
 
+variable "aws_vpc" {
+  type = string
+}
+
+

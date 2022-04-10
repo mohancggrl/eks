@@ -1,4 +1,4 @@
-resource "aws_iam_role" "${var.cluster_name}" {
+resource "aws_iam_role" "eks_cluster" {
   name =  "${var.cluster_name}"
 
   assume_role_policy = <<POLICY
@@ -17,20 +17,20 @@ resource "aws_iam_role" "${var.cluster_name}" {
 POLICY
 }
 
-resource "aws_iam_role_policy_attachment" "${var.cluster_name}-AmazonEKSClusterPolicy" {
+resource "aws_iam_role_policy_attachment" "eks_cluster-AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.${var.cluster_name}.name
+  role       = aws_iam_role.eks_cluster.name
 }
 
-resource "aws_iam_role_policy_attachment" "${var.cluster_name}-AmazonEKSVPCResourceController" {
+resource "aws_iam_role_policy_attachment" "eks_cluster-AmazonEKSVPCResourceController" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
-  role       = aws_iam_role.${var.cluster_name}.name
+  role       = aws_iam_role.eks_cluster.name
 }
 
-resource "aws_security_group" "${var.cluster_name}-sg" {
+resource "aws_security_group" "eks_cluster-sg" {
   name        = "terraform-eks-${var.cluster_name}"
   description = "Cluster communication with worker nodes"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.aws_vpc
 
   egress {
     from_port   = 0
@@ -44,7 +44,7 @@ resource "aws_security_group" "${var.cluster_name}-sg" {
   }
 }
 
-resource "aws_security_group_rule" "${var.cluster_name}-ingress-workstation-https" {
+resource "aws_security_group_rule" "eks_cluster-ingress-workstation-https" {
   cidr_blocks       = [local.workstation-external-cidr]
   description       = "Allow workstation to communicate with the cluster API Server"
   from_port         = 443
@@ -54,18 +54,18 @@ resource "aws_security_group_rule" "${var.cluster_name}-ingress-workstation-http
   type              = "ingress"
 }
 
-resource "aws_eks_cluster" "${var.cluster_name}" {
+resource "aws_eks_cluster" "eks_cluster" {
   name     = "${var.cluster-name}"
   role_arn = aws_iam_role.${var.cluster_name}.arn
 
   vpc_config {
-    security_group_ids = [aws_security_group.${var.cluster_name}.id]
+    security_group_ids = [aws_security_group.eks_cluster-sg.id]
     subnet_ids         = var.subnet_ids   #aws_subnet.${var.cluster_name}[*].id
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.${var.cluster_name}-AmazonEKSClusterPolicy,
-    aws_iam_role_policy_attachment.${var.cluster_name}-AmazonEKSVPCResourceController,
+    aws_iam_role_policy_attachment.eks_cluster-AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.eks_cluster-AmazonEKSVPCResourceController,
 	
   ]
 }
